@@ -1,0 +1,19 @@
+
+# Dependências do Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Pastas de Build (não enviamos o app compilado, apenas o código fonte)
+dist/
+dist-vite/
+build/
+release/
+
+# Arquivos de Sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de Ambiente (Segurança: nunca envie suas chaves privadas)
+.env
+.env.local

@@ -1,0 +1,7 @@
+{
+  "name": "Copy of SHB 0.40",
+  "description": "A productivity ecosystem for students that integrates browsing, smart notes, and study tools into a single unified desktop interface.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Hub Browser</title>
+    <!-- Favicon - Coloque sua logo em assets/favicon.ico ou .png -->
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- Tailwind via CDN para setup rápido (desenv) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fontes Globais -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- LIBS EXTERNAS (Global) -->
+    <!-- Mammoth.js para leitura robusta de DOCX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
+    <style>
+      /* Design Tokens Unificados (Study Hub + Shadcn Compat) */
+      :root {
+        /* Base Colors (HSL) - Midnight Blue Theme */
+        --background: 232 59% 10%;
+        --foreground: 210 20% 90%;
+        
+        --card: 232 59% 12%;
+        --card-foreground: 210 20% 90%;
+        
+        --popover: 232 59% 12%;
+        --popover-foreground: 210 20% 90%;
+        
+        --primary: 221 83% 53%; /* Blue 600 */
+        --primary-foreground: 210 40% 98%;
+        
+        --secondary: 230 33% 18%;
+        --secondary-foreground: 210 20% 90%;
+        
+        --muted: 230 33% 15%;
+        --muted-foreground: 215 20% 65%;
+        
+        --accent: 230 33% 15%;
+        --accent-foreground: 210 40% 98%;
+        
+        --destructive: 0 62% 30%;
+        --destructive-foreground: 210 40% 98%;
+        
+        --border: 217 33% 17%;
+        --input: 217 33% 17%;
+        --ring: 221 83% 53%;
+        
+        --radius: 0.75rem;
+
+        /* Variáveis de Customização Dinâmica (Controladas pelo App.tsx) */
+        --font-primary: 'Inter', sans-serif;
+        --app-text-scale: 1;
+        --transition-duration-multiplier: 1;
+      }
+
+      /* Reset e Base */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(180deg, #0a0e27 0%, #1a1d3e 50%, #252850 100%);
+        color: #e0e6ed;
+        font-family: var(--font-primary, 'Inter', sans-serif);
+        height: 100vh;
+        overflow: hidden;
+      }
+      
+      /* Aplica a duração de transição globalmente para animações CSS */
+      *, *::before, *::after {
+         /* Não forçamos transition-duration em tudo para não quebrar animações específicas, 
+            mas classes utilitárias podem usar essa variável se necessário no futuro.
+            A maior parte do controle será via Javascript/React */
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(15, 18, 35, 0.3);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(96, 165, 250, 0.3);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(96, 165, 250, 0.5);
+      }
+
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+
+      /* ESTILOS DE CARREGAMENTO INSTANTÂNEO (SPLASH SCREEN) */
+      #app-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #0a0e27;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      #app-loading img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        margin-bottom: 20px;
+      }
+
+      #app-loading p {
+        color: #60a5fa;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "next/": "https://aistudiocdn.com/next@^16.0.7/",
+    "next": "https://aistudiocdn.com/next@^16.0.7",
+    "@radix-ui/react-accordion": "https://aistudiocdn.com/@radix-ui/react-accordion@^1.2.12",
+    "@radix-ui/react-alert-dialog": "https://aistudiocdn.com/@radix-ui/react-alert-dialog@^1.1.15",
+    "class-variance-authority": "https://aistudiocdn.com/class-variance-authority@^0.7.1",
+    "@radix-ui/react-aspect-ratio": "https://aistudiocdn.com/@radix-ui/react-aspect-ratio@^1.1.8",
+    "@radix-ui/react-avatar": "https://aistudiocdn.com/@radix-ui/react-avatar@^1.1.11",
+    "@radix-ui/react-slot": "https://aistudiocdn.com/@radix-ui/react-slot@^1.2.4",
+    "react-day-picker": "https://aistudiocdn.com/react-day-picker@^9.11.3",
+    "embla-carousel-react": "https://aistudiocdn.com/embla-carousel-react@^8.6.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.1",
+    "@radix-ui/react-checkbox": "https://aistudiocdn.com/@radix-ui/react-checkbox@^1.3.3",
+    "@radix-ui/react-collapsible": "https://aistudiocdn.com/@radix-ui/react-collapsible@^1.1.12",
+    "cmdk": "https://aistudiocdn.com/cmdk@^1.1.1",
+    "@radix-ui/react-context-menu": "https://aistudiocdn.com/@radix-ui/react-context-menu@^2.2.16",
+    "@radix-ui/react-dialog": "https://aistudiocdn.com/@radix-ui/react-dialog@^1.1.15",
+    "vaul": "https://aistudiocdn.com/vaul@^1.1.2",
+    "@radix-ui/react-dropdown-menu": "https://aistudiocdn.com/@radix-ui/react-dropdown-menu@^2.1.16",
+    "@radix-ui/react-label": "https://aistudiocdn.com/@radix-ui/react-label@^2.1.8",
+    "react-hook-form": "https://aistudiocdn.com/react-hook-form@^7.68.0",
+    "@radix-ui/react-hover-card": "https://aistudiocdn.com/@radix-ui/react-hover-card@^1.1.15",
+    "input-otp": "https://aistudiocdn.com/input-otp@^1.4.2",
+    "@radix-ui/react-menubar": "https://aistudiocdn.com/@radix-ui/react-menubar@^1.1.16",
+    "@radix-ui/react-navigation-menu": "https://aistudiocdn.com/@radix-ui/react-navigation-menu@^1.2.14",
+    "@radix-ui/react-popover": "https://aistudiocdn.com/@radix-ui/react-popover@^1.1.15",
+    "@radix-ui/react-progress": "https://aistudiocdn.com/@radix-ui/react-progress@^1.1.8",
+    "@radix-ui/react-radio-group": "https://aistudiocdn.com/@radix-ui/react-radio-group@^1.3.8",
+    "react-resizable-panels": "https://aistudiocdn.com/react-resizable-panels@^3.0.6",
+    "@radix-ui/react-scroll-area": "https://aistudiocdn.com/@radix-ui/react-scroll-area@^1.2.10",
+    "@radix-ui/react-select": "https://aistudiocdn.com/@radix-ui/react-select@^2.2.6",
+    "@radix-ui/react-separator": "https://aistudiocdn.com/@radix-ui/react-separator@^1.1.8",
+    "@radix-ui/react-slider": "https://aistudiocdn.com/@radix-ui/react-slider@^1.3.6",
+    "next-themes": "https://aistudiocdn.com/next-themes@^0.4.6",
+    "sonner": "https://aistudiocdn.com/sonner@^2.0.7",
+    "@radix-ui/react-switch": "https://aistudiocdn.com/@radix-ui/react-switch@^1.2.6",
+    "@radix-ui/react-tabs": "https://aistudiocdn.com/@radix-ui/react-tabs@^1.1.13",
+    "@radix-ui/react-toast": "https://aistudiocdn.com/@radix-ui/react-toast@^1.2.15",
+    "@radix-ui/react-toggle-group": "https://aistudiocdn.com/@radix-ui/react-toggle-group@^1.1.11",
+    "@radix-ui/react-toggle": "https://aistudiocdn.com/@radix-ui/react-toggle@^1.1.10",
+    "@radix-ui/react-tooltip": "https://aistudiocdn.com/@radix-ui/react-tooltip@^1.2.8",
+    "@prisma/client": "https://aistudiocdn.com/@prisma/client@^7.1.0",
+    "clsx": "https://aistudiocdn.com/clsx@^2.1.1",
+    "tailwind-merge": "https://aistudiocdn.com/tailwind-merge@^3.4.0",
+    "zustand": "https://aistudiocdn.com/zustand@^5.0.9",
+    "zustand/": "https://aistudiocdn.com/zustand@^5.0.9/",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.6",
+    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "fs": "https://aistudiocdn.com/fs@^0.0.1-security",
+    "electron": "https://aistudiocdn.com/electron@^39.2.6",
+    "adm-zip": "https://aistudiocdn.com/adm-zip@^0.5.16",
+    "html2canvas": "https://aistudiocdn.com/html2canvas@^1.4.1",
+    "pdfjs-dist": "https://aistudiocdn.com/pdfjs-dist@^3.11.174",
+    "fabric": "https://aistudiocdn.com/fabric@^5.3.0",
+    "jspdf": "https://aistudiocdn.com/jspdf@^2.5.1",
+    "react-pdf": "https://esm.sh/react-pdf@^10.3.0",
+    "react-pdf/": "https://esm.sh/react-pdf@^10.3.0/",
+    "react-dom": "https://esm.sh/react-dom@^19.2.4",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "electron-updater": "https://esm.sh/electron-updater@^6.7.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root">
+      <!-- SPLASH SCREEN INSTANTÂNEA -->
+      <!-- Isso será exibido imediatamente enquanto o React carrega -->
+      <div id="app-loading">
+        <img src="loading.gif" alt="Loading..." />
+        <p>Iniciando o Laboratório...</p>
+      </div>
+    </div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
