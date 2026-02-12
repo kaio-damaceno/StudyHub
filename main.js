@@ -120,6 +120,11 @@ const atomicWriteAsync = async (filePath, content) => {
 
 // --- HANDLERS (IPCs) ---
 
+ipcMain.handle('get-webview-preload-path', () => {
+    const p = path.join(__dirname, 'webview-preload.js');
+    return p;
+});
+
 // File Dialogs
 ipcMain.handle('select-document', async () => {
     try {
@@ -346,10 +351,23 @@ function createWindow() {
             setTimeout(() => win.loadURL('http://localhost:5173'), 3000);
         });
     } else {
-        const prodPath = path.join(__dirname, 'dist-vite', 'index.html');
+        // CORREÇÃO: Usar app.getAppPath() para encontrar o arquivo index.html no bundle
+        const prodPath = path.join(app.getAppPath(), 'dist-vite', 'index.html');
         log(`Carregando arquivo de produção: ${prodPath}`);
-        win.loadFile(prodPath).catch((e) => {
-            log(`ERRO FATAL ao carregar index.html: ${e.message}`);
+        
+        // Verifica se o arquivo existe antes de carregar
+        fs.access(prodPath, fs.constants.F_OK, (err) => {
+            if (err) {
+                log(`ERRO CRÍTICO: Arquivo index.html não encontrado em ${prodPath}`);
+                // Tenta um caminho alternativo caso a estrutura de pastas tenha mudado
+                const altPath = path.join(__dirname, 'dist-vite', 'index.html');
+                log(`Tentando caminho alternativo: ${altPath}`);
+                win.loadFile(altPath).catch(e => log(`Erro no fallback: ${e.message}`));
+            } else {
+                win.loadFile(prodPath).catch((e) => {
+                    log(`ERRO FATAL ao carregar index.html: ${e.message}`);
+                });
+            }
         });
     }
 }
