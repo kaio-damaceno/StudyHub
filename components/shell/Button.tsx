@@ -2,7 +2,7 @@ import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'ghost' | 'default';
-  size?: 'sm';
+  size?: 'sm' | 'default';
 }
 
 export const Button: React.FC<ButtonProps> = ({ variant = 'default', size = 'default', className = '', children, ...props }) => {
@@ -13,11 +13,12 @@ export const Button: React.FC<ButtonProps> = ({ variant = 'default', size = 'def
   };
   const sizes = {
     sm: 'px-3 py-2 h-9 text-sm',
+    default: 'px-4 py-2.5 h-10 text-base',
   };
 
   return (
     <button
-      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${baseClasses} ${variants[variant]} ${sizes[size as keyof typeof sizes] ?? sizes.default} ${className}`}
       {...props}
     >
       {children}

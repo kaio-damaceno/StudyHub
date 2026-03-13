@@ -1,17 +1,9 @@
-# TODO: Implementação de Atualização Automática via GitHub
+# TODO: Fix TypeScript Errors
 
-## ✅ Plano Aprovado
-- [x] Repo: kaio-damaceno/StudyHub (Windows/Linux/macOS)
-- [x] UI elegante para updates
-- [x] Usar electron-builder + electron-updater
-
-## 📋 Passos Pendentes
-- [x] 1. Instalar electron-updater (`npm install --save-dev electron-updater electron-log`)
-- [x] 2. Editar package.json (adicionar publish config)
-- [x] 3. Editar main.js (adicionar autoUpdater + IPC)
-- [x] 4. Criar UpdateNotifier.tsx (UI elegante)
-- [x] 5. Integrar IPC listener no App.tsx ou SettingsView (preload.js + UpdateNotifier context)
-- [ ] 6. Testar: npm run dist → verificar release GitHub
-- [ ] 7. Usuário setup: GITHUB_TOKEN + primeiro release
-
-**Próximo**: Passo 1 - Instalar dependências
+## Plan Steps:
+1. ✅ Create TODO.md with plan
+2. ✅ Edit App.tsx: Add import for UpdateProvider from './components/shell/UpdateNotifier'
+3. ✅ Edit Button.tsx: Fix size prop typing to union 'sm' | 'default', add default size classes, fix indexing
+4. ✅ Edit UpdateNotifier.tsx: Add import for Button from './Button', replace all window.electronAPI → window.api
+5. ✅ Verify: Run `npx tsc --noEmit` to check no remaining TS errors
+6. ✅ Complete task

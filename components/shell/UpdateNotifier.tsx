@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { Button } from './Button'
 import { toast, Toaster } from 'sonner'
 import { Download, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
-import { Button } from './Button'
-
 // Button and Progress replaced with inline styled components
 
 // Types
@@ -54,15 +53,14 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             <h3 className="font-semibold text-white text-sm leading-tight mb-1">{title}</h3>
             {description && <p className="text-white/80 text-xs leading-relaxed">{description}</p>}
           </div>
-          <div
-            className="w-8 h-8 hover:bg-white/20 p-0 shrink-0 rounded flex items-center justify-center cursor-pointer transition-colors"
-            role="button"
-            tabIndex={0}
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => toast.dismiss(t)}
-            onKeyDown={(e) => e.key === 'Enter' && toast.dismiss(t)}
+            className="w-8 h-8 hover:bg-white/20 p-0 shrink-0"
           >
             <AlertCircle className="w-4 h-4" />
-          </div>
+          </Button>
         </div>
         {actions}
       </div>
@@ -81,7 +79,7 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const checkForUpdates = useCallback(async () => {
     try {
       // Trigger IPC via window
-      const result = await window.electronAPI?.checkForUpdates?.()
+      const result = await window.api?.checkForUpdates?.()
       if (result?.status === 'checking') {
         toast.success('Verificando atualizações...', {
           description: 'Buscando nova versão...',
@@ -112,10 +110,10 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         'StudyHub v' + (updateState.version || 'NOVO'),
         <div className="flex flex-col gap-2 pt-2">
           <div className="flex gap-1">
-            <div className="flex-1 bg-white/10 hover:bg-white/20 text-white h-9 font-medium rounded flex items-center justify-center cursor-pointer transition-colors px-3 py-2" role="button" tabIndex={0} onClick={checkForUpdates} onKeyDown={(e) => e.key === 'Enter' && checkForUpdates()}>
+            <Button size="sm" className="flex-1 bg-white/10 hover:bg-white/20 text-white h-9 font-medium" onClick={checkForUpdates}>
               <RefreshCw className="w-4 h-4 mr-1.5 animate-spin" />
               Verificar Novamente
-            </div>
+            </Button>
           </div>
         </div>
       )
@@ -132,22 +130,26 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         'Atualização baixada!',
         'Clique para reiniciar e instalar.',
         <div className="flex flex-col gap-2 pt-2">
-          <div className="bg-emerald-500/90 hover:bg-emerald-400/90 text-white font-medium h-10 flex items-center gap-2 shadow-lg rounded px-4 py-2 cursor-pointer transition-all" role="button" tabIndex={0} onClick={installUpdate} onKeyDown={(e) => e.key === 'Enter' && installUpdate()}>
+          <Button 
+            size="sm" 
+            className="bg-emerald-500/90 hover:bg-emerald-400/90 text-white font-medium h-10 flex items-center gap-2 shadow-lg"
+            onClick={installUpdate}
+          >
             <CheckCircle className="w-4 h-4" />
             Reiniciar e Instalar
-          </div>
+          </Button>
         </div>
       )
     }
 
-    window.electronAPI?.onUpdateAvailable?.(handleUpdateAvailable)
-    window.electronAPI?.onUpdateProgress?.(handleUpdateProgress)
-    window.electronAPI?.onUpdateDownloaded?.(handleUpdateDownloaded)
+    window.api?.onUpdateAvailable?.(handleUpdateAvailable)
+    window.api?.onUpdateProgress?.(handleUpdateProgress)
+    window.api?.onUpdateDownloaded?.(handleUpdateDownloaded)
 
     return () => {
-      window.electronAPI?.removeUpdateAvailableListener?.(handleUpdateAvailable)
-      window.electronAPI?.removeUpdateProgressListener?.(handleUpdateProgress)
-      window.electronAPI?.removeUpdateDownloadedListener?.(handleUpdateDownloaded)
+      window.api?.removeUpdateAvailableListener?.(handleUpdateAvailable)
+      window.api?.removeUpdateProgressListener?.(handleUpdateProgress)
+      window.api?.removeUpdateDownloadedListener?.(handleUpdateDownloaded)
     }
   }, [checkForUpdates, installUpdate, showUpdateToast, updateState.version])
 

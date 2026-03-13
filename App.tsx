@@ -19,9 +19,6 @@ import DocumentsView from './components/views/DocumentsView';
 import { ViewState, Tab, HistoryEntry, DownloadItem, BookmarkItem, ClosedTab, UserSettings, HistoryInterval } from './types';
 import type { PermissionRequest, ExtensionItem } from './electron';
 import { Icon } from './components/ui/Icon';
-import { UpdateProvider } from './components/shell/UpdateNotifier';
-
-import { UpdateProvider } from './components/shell/UpdateNotifier';
 import { TaskProvider, useTasks } from './contexts/TaskContext';
 import { RoutineProvider } from './contexts/RoutineContext';
 import { NotesProvider } from './contexts/NotesContext';
@@ -29,6 +26,7 @@ import { FlashcardProvider } from './contexts/FlashcardContext';
 import { VisionBoardProvider, useVisionBoard } from './contexts/VisionBoardContext';
 import { MindMapProvider } from './contexts/MindMapContext';
 import { DocumentProvider, useDocument } from './contexts/DocumentContext';
+import { UpdateProvider } from './components/shell/UpdateNotifier';
 
 // OVERLAY IMPORTS
 import { OverlayProvider, useOverlay } from './contexts/OverlayContext';

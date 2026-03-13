@@ -34,6 +34,16 @@ export interface ElectronAPI {
   getWebviewPreloadPath: () => Promise<string>; 
   openFileDialog: () => void;
   
+  checkForUpdates: () => Promise<any>;
+  
+  onUpdateAvailable: (callback: () => void) => void;
+  onUpdateProgress: (callback: (progress: any) => void) => void;
+  onUpdateDownloaded: (callback: () => void) => void;
+  
+  removeUpdateAvailableListener: (callback: () => void) => void;
+  removeUpdateProgressListener: (callback: (progress: any) => void) => void;
+  removeUpdateDownloadedListener: (callback: () => void) => void;
+  
   // Documentos
   selectPDF: () => Promise<{ path: string; name: string } | null>;
   selectDocument: () => Promise<{ path: string; name: string } | null>; // Adicionado
