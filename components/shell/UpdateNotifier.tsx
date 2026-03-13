@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { toast, Toaster } from 'sonner'
 import { Download, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
+import { Button } from './Button'
+
 // Button and Progress replaced with inline styled components
 
 // Types
@@ -52,14 +54,15 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             <h3 className="font-semibold text-white text-sm leading-tight mb-1">{title}</h3>
             {description && <p className="text-white/80 text-xs leading-relaxed">{description}</p>}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
+          <div
+            className="w-8 h-8 hover:bg-white/20 p-0 shrink-0 rounded flex items-center justify-center cursor-pointer transition-colors"
+            role="button"
+            tabIndex={0}
             onClick={() => toast.dismiss(t)}
-            className="w-8 h-8 hover:bg-white/20 p-0 shrink-0"
+            onKeyDown={(e) => e.key === 'Enter' && toast.dismiss(t)}
           >
             <AlertCircle className="w-4 h-4" />
-          </Button>
+          </div>
         </div>
         {actions}
       </div>
@@ -109,10 +112,10 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         'StudyHub v' + (updateState.version || 'NOVO'),
         <div className="flex flex-col gap-2 pt-2">
           <div className="flex gap-1">
-            <Button size="sm" className="flex-1 bg-white/10 hover:bg-white/20 text-white h-9 font-medium" onClick={checkForUpdates}>
+            <div className="flex-1 bg-white/10 hover:bg-white/20 text-white h-9 font-medium rounded flex items-center justify-center cursor-pointer transition-colors px-3 py-2" role="button" tabIndex={0} onClick={checkForUpdates} onKeyDown={(e) => e.key === 'Enter' && checkForUpdates()}>
               <RefreshCw className="w-4 h-4 mr-1.5 animate-spin" />
               Verificar Novamente
-            </Button>
+            </div>
           </div>
         </div>
       )
@@ -129,14 +132,10 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         'Atualização baixada!',
         'Clique para reiniciar e instalar.',
         <div className="flex flex-col gap-2 pt-2">
-          <Button 
-            size="sm" 
-            className="bg-emerald-500/90 hover:bg-emerald-400/90 text-white font-medium h-10 flex items-center gap-2 shadow-lg"
-            onClick={installUpdate}
-          >
+          <div className="bg-emerald-500/90 hover:bg-emerald-400/90 text-white font-medium h-10 flex items-center gap-2 shadow-lg rounded px-4 py-2 cursor-pointer transition-all" role="button" tabIndex={0} onClick={installUpdate} onKeyDown={(e) => e.key === 'Enter' && installUpdate()}>
             <CheckCircle className="w-4 h-4" />
             Reiniciar e Instalar
-          </Button>
+          </div>
         </div>
       )
     }
