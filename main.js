@@ -17,7 +17,7 @@ process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
 const originalEmitWarning = process.emitWarning;
 process.emitWarning = (warning, ...args) => {
     if (typeof warning === 'string' && (
-        warning.includes('ExtensionLoadWarning') || 
+        warning.includes('ExtensionLoadWarning') ||
         warning.includes('Manifest version 2') ||
         warning.includes('Permission')
     )) {
@@ -31,6 +31,15 @@ app.commandLine.appendSwitch('allow-insecure-localhost');
 app.commandLine.appendSwitch('disable-site-isolation-trials');
 app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors,ExtensionManifestV2DeprecationWarning');
 app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+
+// --- ERROR HANDLING ---
+process.on('uncaughtException', (error) => {
+    log.error('!!! CRASH (uncaughtException):', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    log.error('!!! CRASH (unhandledRejection):', reason);
+});
 
 const GLOBAL_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
@@ -72,7 +81,7 @@ ipcMain.handle('select-document', async () => {
         });
 
         if (canceled || !filePaths || filePaths.length === 0) return null;
-        
+
         return {
             path: filePaths[0],
             name: path.basename(filePaths[0])
@@ -97,10 +106,10 @@ ipcMain.handle('read-file-buffer', async (event, filePath) => {
 
 ipcMain.handle('flashcard-export', async (event, { content, format, defaultName }) => {
     try {
-        const filters = format === 'json' ? 
-            [{ name: 'Backup Study Hub (JSON)', extensions: ['json'] }] : 
+        const filters = format === 'json' ?
+            [{ name: 'Backup Study Hub (JSON)', extensions: ['json'] }] :
             [{ name: 'Lista de Estudo (TXT)', extensions: ['txt'] }];
-        
+
         const { filePath, canceled } = await dialog.showSaveDialog(mainWindow, {
             title: 'Exportar Coleção de Flashcards',
             defaultPath: defaultName || `studyhub_export.${format}`,
@@ -135,10 +144,10 @@ ipcMain.handle('flashcard-import-dialog', async (event) => {
         const ext = path.extname(filePath).toLowerCase();
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        return { 
-            type: ext.replace('.', ''), 
-            content, 
-            fileName: path.basename(filePath) 
+        return {
+            type: ext.replace('.', ''),
+            content,
+            fileName: path.basename(filePath)
         };
     } catch (error) {
         console.error("Erro na Leitura do Arquivo:", error);
@@ -178,7 +187,7 @@ const pruneHistory = async (win) => {
         let history = JSON.parse(data);
         const initialLength = history.length;
         const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
-        const MAX_ITEMS = 50000; 
+        const MAX_ITEMS = 50000;
         const now = Date.now();
         history = history.filter(item => (now - item.timestamp) < ONE_YEAR_MS);
         if (history.length > MAX_ITEMS) {
@@ -195,7 +204,7 @@ const pruneHistory = async (win) => {
 };
 
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'studyhub-ext', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }
+    { scheme: 'studyhub-ext', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }
 ]);
 
 // --- EXTENSIONS LOGIC ---
@@ -249,7 +258,7 @@ const findExtensionRoot = (dir) => {
 const cleanupMetadata = (dir) => {
     const metadataPath = path.join(dir, '_metadata');
     if (fs.existsSync(metadataPath)) {
-        try { fs.rmSync(metadataPath, { recursive: true, force: true }); } catch (e) {}
+        try { fs.rmSync(metadataPath, { recursive: true, force: true }); } catch (e) { }
     }
 };
 
@@ -263,9 +272,9 @@ const parseExtensionManifest = (folderPath) => {
         if (icons) {
             iconPath = icons['128'] || icons['48'] || icons['32'] || icons['16'] || Object.values(icons)[0];
         } else if (manifest.browser_action?.default_icon) {
-             const defIcons = manifest.browser_action.default_icon;
-             if (typeof defIcons === 'string') iconPath = defIcons;
-             else if (typeof defIcons === 'object') iconPath = defIcons['32'] || Object.values(defIcons)[0];
+            const defIcons = manifest.browser_action.default_icon;
+            if (typeof defIcons === 'string') iconPath = defIcons;
+            else if (typeof defIcons === 'object') iconPath = defIcons['32'] || Object.values(defIcons)[0];
         }
         let popupPath = '';
         if (manifest.action?.default_popup) popupPath = manifest.action.default_popup;
@@ -289,25 +298,25 @@ const installExtensionFromBuffer = async (bufferOrPath, isFile, cwsId = null, wi
         const tempId = `temp_${Date.now()}`;
         const tempDir = path.join(extensionsPath, tempId);
         fs.mkdirSync(tempDir, { recursive: true });
-        
+
         const zip = new AdmZip(zipBuffer);
         zip.extractAllTo(tempDir, true);
-        
+
         const rootDir = findExtensionRoot(tempDir);
         if (!rootDir) throw new Error("manifest.json não encontrado.");
         cleanupMetadata(rootDir);
-        
+
         let folderId = cwsId || `local_${Date.now()}`;
         const finalDir = path.join(extensionsPath, folderId);
         if (fs.existsSync(finalDir)) fs.rmSync(finalDir, { recursive: true, force: true });
         fs.cpSync(rootDir, finalDir, { recursive: true });
         fs.rmSync(tempDir, { recursive: true, force: true });
-        
+
         const details = parseExtensionManifest(finalDir);
         if (!details) throw new Error("Manifesto inválido.");
-        
+
         const loadedExtension = await session.defaultSession.extensions.loadExtension(finalDir, { allowFileAccess: true });
-        
+
         saveExtensionToList({
             id: loadedExtension.id,
             cwsId: cwsId,
@@ -319,9 +328,9 @@ const installExtensionFromBuffer = async (bufferOrPath, isFile, cwsId = null, wi
             icon: details.icon,
             popup: details.popup
         });
-        
+
         if (win) {
-             win.webContents.send('extension-status', { id: loadedExtension.id, status: 'completed', message: 'Instalado!' });
+            win.webContents.send('extension-status', { id: loadedExtension.id, status: 'completed', message: 'Instalado!' });
         }
     } catch (error) {
         console.error("Install Error:", error);
@@ -345,34 +354,37 @@ const loadPersistedExtensions = async () => {
 // --- WINDOW CREATION & CORE IPC ---
 
 function createWindow() {
+    log.info('Iniciando createWindow()...');
     const splash = new BrowserWindow({
-      width: 1280, height: 800, frame: false, titleBarStyle: 'hidden', show: true,
-      backgroundColor: '#0a0e27',
-      center: true,
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true
-      }
+        width: 1280, height: 800, frame: false, titleBarStyle: 'hidden', show: true,
+        backgroundColor: '#0a0e27',
+        center: true,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true
+        }
     });
+    log.info('Splash screen criada.');
     splash.loadFile(path.join(__dirname, 'loading.html'));
 
     const win = new BrowserWindow({
-      width: 1280, height: 800, frame: false, titleBarStyle: 'hidden', show: false,
-      backgroundColor: '#0a0e27',
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-        webviewTag: true,
-        nodeIntegration: false,
-        contextIsolation: true,
-        spellcheck: true,
-        webSecurity: false,
-      },
+        width: 1280, height: 800, frame: false, titleBarStyle: 'hidden', show: false,
+        backgroundColor: '#0a0e27',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            webviewTag: true,
+            nodeIntegration: false,
+            contextIsolation: true,
+            spellcheck: true,
+            webSecurity: false,
+        },
     });
-    
+    log.info('Janela principal instanciada.');
+
     if (!mainWindow) mainWindow = win;
-  
-    Menu.setApplicationMenu(null); 
-  
+
+    Menu.setApplicationMenu(null);
+
     let isSplashClosed = false;
 
     const closeSplashAndShowMain = () => {
@@ -389,35 +401,42 @@ function createWindow() {
     // Fechar splash screen quando a janela principal estiver pronta
     win.webContents.once('did-finish-load', closeSplashAndShowMain);
     win.webContents.once('did-fail-load', closeSplashAndShowMain);
-    
+
     ipcMain.once('app-ready', () => {
         closeSplashAndShowMain();
     });
 
     // Limite máximo de 1500ms para a tela de loading
     setTimeout(closeSplashAndShowMain, 1500);
-    
+
     // Handler para permitir a seleção de mídia (Display Media) sem erro
     win.webContents.session.setDisplayMediaRequestHandler((request, callback) => {
         // Isso permite que o navegador abra a janela nativa de seleção
         // sem rejeitar a promessa imediatamente.
-        callback({}); 
+        callback({});
     });
 
     win.webContents.on('console-message', (event, level, message, line, sourceId) => {
         console.log(`[Renderer] ${message} (${sourceId}:${line})`);
     });
-    
+
     const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+    log.info(`Modo: ${isDev ? 'Development' : 'Production'} (Packaged: ${app.isPackaged})`);
+
     if (isDev) {
+        log.info('Tentando carregar URL de desenvolvimento...');
         win.loadURL('http://localhost:5173').catch(() => {
-            console.log('Failed to load dev server, falling back to local files');
+            log.warn('Falha ao carregar server dev, usando fallback local.');
             win.loadFile(path.join(__dirname, 'dist-vite', 'index.html')).catch(() => win.loadFile(path.join(__dirname, 'fallback.html')));
         });
     } else {
-        win.loadFile(path.join(__dirname, 'dist-vite', 'index.html')).catch(() => win.loadFile(path.join(__dirname, 'fallback.html')));
+        log.info('Carregando arquivos locais (Production)...');
+        win.loadFile(path.join(__dirname, 'dist-vite', 'index.html')).catch((err) => {
+            log.error('Erro ao carregar index.html:', err);
+            win.loadFile(path.join(__dirname, 'fallback.html'));
+        });
     }
-  }
+}
 
 // --- HANDLERS IPC (ÚNICOS E CONSOLIDADOS) ---
 
@@ -440,25 +459,25 @@ ipcMain.on('window-close', (event) => {
 });
 
 ipcMain.handle('storage-get', async (event, key) => {
-      const filePath = path.join(storagePath, `${key}.json`);
-      if (fs.existsSync(filePath)) {
-          try {
-              const data = await fs.promises.readFile(filePath, 'utf-8');
-              return JSON.parse(data);
-          } catch (e) { return null; }
-      }
-      return null;
+    const filePath = path.join(storagePath, `${key}.json`);
+    if (fs.existsSync(filePath)) {
+        try {
+            const data = await fs.promises.readFile(filePath, 'utf-8');
+            return JSON.parse(data);
+        } catch (e) { return null; }
+    }
+    return null;
 });
 
 ipcMain.on('storage-set', async (event, { key, value }) => {
-      const filePath = path.join(storagePath, `${key}.json`);
-      await atomicWriteAsync(filePath, JSON.stringify(value, null, 2));
-      // Sincroniza outras janelas se existirem
-      BrowserWindow.getAllWindows().forEach(win => {
-          if (win.webContents !== event.sender) {
-              win.webContents.send('storage-updated', { key, value });
-          }
-      });
+    const filePath = path.join(storagePath, `${key}.json`);
+    await atomicWriteAsync(filePath, JSON.stringify(value, null, 2));
+    // Sincroniza outras janelas se existirem
+    BrowserWindow.getAllWindows().forEach(win => {
+        if (win.webContents !== event.sender) {
+            win.webContents.send('storage-updated', { key, value });
+        }
+    });
 });
 
 ipcMain.handle('perform-search', async (event, { query, category, engine }) => {
@@ -488,19 +507,19 @@ ipcMain.handle('perform-search', async (event, { query, category, engine }) => {
         return await response.text();
     } catch (e) {
         console.error(`Search error:`, e);
-        return ""; 
+        return "";
     }
 });
 
 ipcMain.on('install-cws-extension', async (event, data) => {
-      try {
-          const crxUrl = `https://clients2.google.com/service/update2/crx?response=redirect&prodversion=132.0.6834.160&acceptformat=crx2,crx3&x=id%3D${data.id}%26uc`;
-          const response = await fetch(crxUrl);
-          const buffer = Buffer.from(await response.arrayBuffer());
-          await installExtensionFromBuffer(buffer, false, data.id, mainWindow);
-      } catch (e) {
-          console.error(e);
-      }
+    try {
+        const crxUrl = `https://clients2.google.com/service/update2/crx?response=redirect&prodversion=132.0.6834.160&acceptformat=crx2,crx3&x=id%3D${data.id}%26uc`;
+        const response = await fetch(crxUrl);
+        const buffer = Buffer.from(await response.arrayBuffer());
+        await installExtensionFromBuffer(buffer, false, data.id, mainWindow);
+    } catch (e) {
+        console.error(e);
+    }
 });
 
 ipcMain.on('remove-extension', (event, id) => {
@@ -573,43 +592,46 @@ app.whenReady().then(() => {
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
     log.info('App inicializado, verificando updates...');
-    
+
     autoUpdater.on('checking-for-update', () => {
-      log.info('Verificando atualizações...');
+        log.info('Verificando atualizações...');
     });
 
     autoUpdater.on('update-available', (info) => {
-      log.info('Update disponível:', info.version);
-      mainWindow?.webContents.send('update-available', info);
+        log.info('Update disponível:', info.version);
+        mainWindow?.webContents.send('update-available', info);
     });
-    
+
     autoUpdater.on('update-not-available', (info) => {
-      log.info('Nenhum update disponível. Versão atual:', info.version);
-      mainWindow?.webContents.send('update-not-available', info);
+        log.info('Nenhum update disponível. Versão atual:', info.version);
+        mainWindow?.webContents.send('update-not-available', info);
     });
 
     autoUpdater.on('download-progress', (progress) => {
-      log.info(`Download progress: ${Math.round(progress.percent)}%`);
-      mainWindow?.webContents.send('update-progress', progress);
+        log.info(`Download progress: ${Math.round(progress.percent)}%`);
+        mainWindow?.webContents.send('update-progress', progress);
     });
-    
+
     autoUpdater.on('update-downloaded', (info) => {
-      log.info('Update baixado, reiniciar para instalar:', info.version);
-      mainWindow?.webContents.send('update-downloaded', info);
+        log.info('Update baixado, reiniciar para instalar:', info.version);
+        mainWindow?.webContents.send('update-downloaded', info);
     });
 
     autoUpdater.on('error', (error) => {
-      log.error('Erro no auto-updater:', error);
-      mainWindow?.webContents.send('update-error', error?.message || 'Erro desconhecido');
+        log.error('Erro no auto-updater:', error);
+        mainWindow?.webContents.send('update-error', error?.message || 'Erro desconhecido');
     });
-    
+
     // Verificação inicial
-    autoUpdater.checkForUpdatesAndNotify();
+    log.info('Chamando checkForUpdatesAndNotify()...');
+    autoUpdater.checkForUpdatesAndNotify().catch(err => {
+        log.error('Erro direto na promessa de checkUpdate:', err);
+    });
 
     // Verificação periódica a cada 30 minutos
     setInterval(() => {
-      log.info('Verificação periódica de updates...');
-      autoUpdater.checkForUpdatesAndNotify();
+        log.info('Verificação periódica de updates...');
+        autoUpdater.checkForUpdatesAndNotify();
     }, 30 * 60 * 1000);
 });
 
