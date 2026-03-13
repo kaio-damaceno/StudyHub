@@ -1,6 +1,7 @@
 
 import { app, BrowserWindow, ipcMain, Menu, MenuItem, shell, clipboard, session, dialog, protocol } from 'electron';
-import { autoUpdater } from 'electron-updater';
+import pkg from 'electron-updater';
+const { autoUpdater } = pkg;
 import log from 'electron-log';
 import path from 'path';
 import fs from 'fs';
@@ -554,6 +555,12 @@ ipcMain.handle('check-for-updates', async () => {
     }
 });
 
+// IPC to trigger quit and install
+ipcMain.on('install-update', () => {
+    log.info('Usuário solicitou instalação do update. Reiniciando...');
+    autoUpdater.quitAndInstall(false, true);
+});
+
 // --- APP LIFECYCLE ---
 
 app.whenReady().then(() => {
@@ -563,23 +570,47 @@ app.whenReady().then(() => {
 
     // Auto Updater Setup
     autoUpdater.logger = log;
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
     log.info('App inicializado, verificando updates...');
     
-    autoUpdater.on('update-available', () => {
-      log.info('Update disponível');
-      mainWindow?.webContents.send('update-available');
+    autoUpdater.on('checking-for-update', () => {
+      log.info('Verificando atualizações...');
+    });
+
+    autoUpdater.on('update-available', (info) => {
+      log.info('Update disponível:', info.version);
+      mainWindow?.webContents.send('update-available', info);
     });
     
+    autoUpdater.on('update-not-available', (info) => {
+      log.info('Nenhum update disponível. Versão atual:', info.version);
+      mainWindow?.webContents.send('update-not-available', info);
+    });
+
     autoUpdater.on('download-progress', (progress) => {
+      log.info(`Download progress: ${Math.round(progress.percent)}%`);
       mainWindow?.webContents.send('update-progress', progress);
     });
     
-    autoUpdater.on('update-downloaded', () => {
-      log.info('Update baixado, reiniciar para instalar');
-      mainWindow?.webContents.send('update-downloaded');
+    autoUpdater.on('update-downloaded', (info) => {
+      log.info('Update baixado, reiniciar para instalar:', info.version);
+      mainWindow?.webContents.send('update-downloaded', info);
+    });
+
+    autoUpdater.on('error', (error) => {
+      log.error('Erro no auto-updater:', error);
+      mainWindow?.webContents.send('update-error', error?.message || 'Erro desconhecido');
     });
     
+    // Verificação inicial
     autoUpdater.checkForUpdatesAndNotify();
+
+    // Verificação periódica a cada 30 minutos
+    setInterval(() => {
+      log.info('Verificação periódica de updates...');
+      autoUpdater.checkForUpdatesAndNotify();
+    }, 30 * 60 * 1000);
 });
 
 app.on('window-all-closed', () => {

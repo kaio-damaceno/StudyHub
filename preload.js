@@ -7,20 +7,20 @@ contextBridge.exposeInMainWorld('api', {
   toggleFloatingTodo: () => ipcRenderer.send('toggle-floating-todo'),
   openPath: (path) => ipcRenderer.send('open-path', path),
   getWebviewPreloadPath: () => ipcRenderer.invoke('get-webview-preload-path'),
-  
+
   // File Opener
   openFileDialog: () => ipcRenderer.send('open-file-dialog'),
   selectPDF: () => ipcRenderer.invoke('select-document'), // Renomeado conceitualmente para select-document no main, mas mantendo compatibilidade
   selectDocument: () => ipcRenderer.invoke('select-document'),
   readFileBuffer: (path) => ipcRenderer.invoke('read-file-buffer', path),
-  
+
   // Flashcard Actions
   importAnki: () => ipcRenderer.invoke('flashcard-import-anki'),
   exportFlashcards: (data) => ipcRenderer.invoke('flashcard-export', data),
   importFlashcardsDialog: () => ipcRenderer.invoke('flashcard-import-dialog'),
 
   // Call to Print current page (triggers browser logic)
-  savePage: () => ipcRenderer.send('save-page-request'), 
+  savePage: () => ipcRenderer.send('save-page-request'),
 
   // Window Management
   openNewWindow: (url) => ipcRenderer.send('open-new-window', url),
@@ -40,7 +40,7 @@ contextBridge.exposeInMainWorld('api', {
   installExtensionFromFile: (path) => ipcRenderer.send('install-extension-from-file', path),
   toggleExtensionPin: (id) => ipcRenderer.send('toggle-extension-pin', id),
   openExtensionOptions: (id) => ipcRenderer.send('open-extension-options', id),
-  
+
   onExtensionStatus: (callback) => {
     const handler = (_event, data) => callback(data);
     ipcRenderer.on('extension-status', handler);
@@ -86,7 +86,7 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('download-complete', handler);
     return () => ipcRenderer.removeListener('download-complete', handler);
   },
-  
+
   // PERMISSIONS
   onPermissionRequest: (callback) => {
     const handler = (_event, req) => callback(req);
@@ -97,18 +97,24 @@ contextBridge.exposeInMainWorld('api', {
 
   // STORAGE SYNC
   onStorageUpdated: (callback) => {
-      const handler = (_event, { key, value }) => callback(key, value);
-      ipcRenderer.on('storage-updated', handler);
-      return () => ipcRenderer.removeListener('storage-updated', handler);
+    const handler = (_event, { key, value }) => callback(key, value);
+    ipcRenderer.on('storage-updated', handler);
+    return () => ipcRenderer.removeListener('storage-updated', handler);
   },
 
   // UPDATE API
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
-  
+  installUpdate: () => ipcRenderer.send('install-update'),
+
   onUpdateAvailable: (callback) => {
-    const handler = (_event) => callback();
+    const handler = (_event, info) => callback(info);
     ipcRenderer.on('update-available', handler);
     return () => ipcRenderer.removeListener('update-available', handler);
+  },
+  onUpdateNotAvailable: (callback) => {
+    const handler = (_event, info) => callback(info);
+    ipcRenderer.on('update-not-available', handler);
+    return () => ipcRenderer.removeListener('update-not-available', handler);
   },
   onUpdateProgress: (callback) => {
     const handler = (_event, progress) => callback(progress);
@@ -116,9 +122,14 @@ contextBridge.exposeInMainWorld('api', {
     return () => ipcRenderer.removeListener('update-progress', handler);
   },
   onUpdateDownloaded: (callback) => {
-    const handler = (_event) => callback();
+    const handler = (_event, info) => callback(info);
     ipcRenderer.on('update-downloaded', handler);
     return () => ipcRenderer.removeListener('update-downloaded', handler);
+  },
+  onUpdateError: (callback) => {
+    const handler = (_event, message) => callback(message);
+    ipcRenderer.on('update-error', handler);
+    return () => ipcRenderer.removeListener('update-error', handler);
   }
 });
 

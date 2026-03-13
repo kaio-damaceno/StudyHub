@@ -94,20 +94,25 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [])
 
   const installUpdate = useCallback(() => {
-    // Native quitAndInstall will be called from main process on 'update-downloaded'
     toast.success('Reiniciando para instalar...', {
       description: 'A nova versão será instalada.',
       duration: 2000,
     })
+    // Chama o main process para executar quitAndInstall
+    setTimeout(() => {
+      window.api?.installUpdate?.()
+    }, 1500)
   }, [])
 
   // Listen to IPC events from main process
   useEffect(() => {
-    const handleUpdateAvailable = () => {
-      setUpdateState(prev => ({ ...prev, available: true }))
+    const cleanups: (() => void)[] = []
+
+    const unsubAvailable = window.api?.onUpdateAvailable?.((info: any) => {
+      setUpdateState(prev => ({ ...prev, available: true, version: info?.version }))
       showUpdateToast(
         'Nova versão disponível!',
-        'StudyHub v' + (updateState.version || 'NOVO'),
+        'StudyHub v' + (info?.version || 'NOVO'),
         <div className="flex flex-col gap-2 pt-2">
           <div className="flex gap-1">
             <Button size="sm" className="flex-1 bg-white/10 hover:bg-white/20 text-white h-9 font-medium" onClick={checkForUpdates}>
@@ -117,21 +122,22 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           </div>
         </div>
       )
-    }
+    })
+    if (unsubAvailable) cleanups.push(unsubAvailable)
 
-    const handleUpdateProgress = (progress: any) => {
+    const unsubProgress = window.api?.onUpdateProgress?.((progress: any) => {
       setUpdateState(prev => ({ ...prev, downloading: true, progress: progress.percent }))
-      // Update toast progress if needed
-    }
+    })
+    if (unsubProgress) cleanups.push(unsubProgress)
 
-    const handleUpdateDownloaded = () => {
-      setUpdateState(prev => ({ ...prev, downloaded: true }))
+    const unsubDownloaded = window.api?.onUpdateDownloaded?.((info: any) => {
+      setUpdateState(prev => ({ ...prev, downloaded: true, version: info?.version }))
       showUpdateToast(
         'Atualização baixada!',
         'Clique para reiniciar e instalar.',
         <div className="flex flex-col gap-2 pt-2">
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="bg-emerald-500/90 hover:bg-emerald-400/90 text-white font-medium h-10 flex items-center gap-2 shadow-lg"
             onClick={installUpdate}
           >
@@ -140,23 +146,24 @@ export const UpdateProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           </Button>
         </div>
       )
-    }
+    })
+    if (unsubDownloaded) cleanups.push(unsubDownloaded)
 
-    window.api?.onUpdateAvailable?.(handleUpdateAvailable)
-    window.api?.onUpdateProgress?.(handleUpdateProgress)
-    window.api?.onUpdateDownloaded?.(handleUpdateDownloaded)
+    const unsubError = window.api?.onUpdateError?.((message: string) => {
+      setUpdateState(prev => ({ ...prev, error: message }))
+      console.error('Auto-update error:', message)
+    })
+    if (unsubError) cleanups.push(unsubError)
 
     return () => {
-      window.api?.removeUpdateAvailableListener?.(handleUpdateAvailable)
-      window.api?.removeUpdateProgressListener?.(handleUpdateProgress)
-      window.api?.removeUpdateDownloadedListener?.(handleUpdateDownloaded)
+      cleanups.forEach(unsub => unsub())
     }
-  }, [checkForUpdates, installUpdate, showUpdateToast, updateState.version])
+  }, [checkForUpdates, installUpdate, showUpdateToast])
 
   return (
     <UpdateContext.Provider value={{ checkForUpdates, installUpdate }}>
       {children}
-      <Toaster 
+      <Toaster
         position="top-right"
         richColors
         closeButton
