@@ -622,11 +622,14 @@ app.whenReady().then(() => {
         mainWindow?.webContents.send('update-error', error?.message || 'Erro desconhecido');
     });
 
-    // Verificação inicial
-    log.info('Chamando checkForUpdatesAndNotify()...');
-    autoUpdater.checkForUpdatesAndNotify().catch(err => {
-        log.error('Erro direto na promessa de checkUpdate:', err);
-    });
+    // Verificação inicial atrasada para evitar crash na largada e permitir ver o log
+    log.info('Agendando verificação inicial de updates em 6s...');
+    setTimeout(() => {
+        log.info('Iniciando checkForUpdatesAndNotify() agendado...');
+        autoUpdater.checkForUpdatesAndNotify().catch(err => {
+            log.error('Erro direto na promessa de checkUpdate:', err);
+        });
+    }, 6000);
 
     // Verificação periódica a cada 30 minutos
     setInterval(() => {
