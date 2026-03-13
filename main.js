@@ -1,7 +1,6 @@
 
 import { app, BrowserWindow, ipcMain, Menu, MenuItem, shell, clipboard, session, dialog, protocol } from 'electron';
-import pkg from 'electron-updater';
-const { autoUpdater } = pkg;
+import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import path from 'path';
 import fs from 'fs';
@@ -588,10 +587,10 @@ app.whenReady().then(() => {
     createWindow();
 
     // Auto Updater Setup
-    autoUpdater.logger = log;
-    autoUpdater.autoDownload = false; // Desabilitado para evitar crash no download automático
+    // autoUpdater.logger = log; // Comentado para testar se o log causa o crash
+    autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
-    log.info('App inicializado. Auto-updater configurado (autoDownload: false).');
+    log.info('App inicializado. Auto-updater configurado no modo passivo.');
 
     autoUpdater.on('checking-for-update', () => {
         log.info('Verificando atualizações...');
@@ -622,21 +621,23 @@ app.whenReady().then(() => {
         mainWindow?.webContents.send('update-error', error?.message || 'Erro desconhecido');
     });
 
-    // Verificação inicial atrasada para evitar crash na largada e garantir que a janela esteja pronta
-    log.info('Agendando verificação inicial de updates em 10s...');
+    // Verificação inicial atrasada para diagnóstico
+    log.info('Agendando verificação de updates em 20s (Segurança Máxima)...');
     setTimeout(() => {
-        try {
-            log.info('Iniciando checkForUpdates() agendado...');
-            // Usando checkForUpdates em vez de checkForUpdatesAndNotify para mais controle
-            autoUpdater.checkForUpdates().then((result) => {
-                log.info('Check for updates concluído com sucesso.');
-            }).catch(err => {
-                log.error('Erro pego no .catch() do checkForUpdates:', err);
-            });
-        } catch (error) {
-            log.error('Erro catastrófico ao tentar iniciar check de updates:', error);
+        if (!app.isPackaged) {
+            log.info('Pulando update check: App não está empacotado.');
+            return;
         }
-    }, 10000);
+
+        log.info('Executando autoUpdater.checkForUpdates()...');
+        try {
+            autoUpdater.checkForUpdates()
+                .then(res => log.info('Promessa do check resolvida.'))
+                .catch(err => log.error('Erro (Promessa) no check:', err));
+        } catch (e) {
+            log.error('Erro (Catch) no check:', e);
+        }
+    }, 20000);
 
     // Verificação periódica a cada 30 minutos
     setInterval(() => {
