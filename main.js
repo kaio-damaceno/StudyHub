@@ -589,9 +589,9 @@ app.whenReady().then(() => {
 
     // Auto Updater Setup
     autoUpdater.logger = log;
-    autoUpdater.autoDownload = true;
+    autoUpdater.autoDownload = false; // Desabilitado para evitar crash no download automático
     autoUpdater.autoInstallOnAppQuit = true;
-    log.info('App inicializado, verificando updates...');
+    log.info('App inicializado. Auto-updater configurado (autoDownload: false).');
 
     autoUpdater.on('checking-for-update', () => {
         log.info('Verificando atualizações...');
@@ -622,14 +622,21 @@ app.whenReady().then(() => {
         mainWindow?.webContents.send('update-error', error?.message || 'Erro desconhecido');
     });
 
-    // Verificação inicial atrasada para evitar crash na largada e permitir ver o log
-    log.info('Agendando verificação inicial de updates em 6s...');
+    // Verificação inicial atrasada para evitar crash na largada e garantir que a janela esteja pronta
+    log.info('Agendando verificação inicial de updates em 10s...');
     setTimeout(() => {
-        log.info('Iniciando checkForUpdatesAndNotify() agendado...');
-        autoUpdater.checkForUpdatesAndNotify().catch(err => {
-            log.error('Erro direto na promessa de checkUpdate:', err);
-        });
-    }, 6000);
+        try {
+            log.info('Iniciando checkForUpdates() agendado...');
+            // Usando checkForUpdates em vez de checkForUpdatesAndNotify para mais controle
+            autoUpdater.checkForUpdates().then((result) => {
+                log.info('Check for updates concluído com sucesso.');
+            }).catch(err => {
+                log.error('Erro pego no .catch() do checkForUpdates:', err);
+            });
+        } catch (error) {
+            log.error('Erro catastrófico ao tentar iniciar check de updates:', error);
+        }
+    }, 10000);
 
     // Verificação periódica a cada 30 minutos
     setInterval(() => {
