@@ -2,28 +2,28 @@
 import { DownloadItem } from './types';
 
 export interface ExtensionItem {
-    id: string;
-    title: string;
-    version?: string;
-    description?: string;
-    installDate: number;
-    path: string;
-    icon?: string;
-    popup?: string;
-    optionsUrl?: string; 
-    pinned?: boolean;    
+  id: string;
+  title: string;
+  version?: string;
+  description?: string;
+  installDate: number;
+  path: string;
+  icon?: string;
+  popup?: string;
+  optionsUrl?: string;
+  pinned?: boolean;
 }
 
 export interface ExtensionStatus {
-    id: string;
-    status: 'downloading' | 'installing' | 'completed' | 'error' | 'removed';
-    message: string;
+  id: string;
+  status: 'downloading' | 'installing' | 'completed' | 'error' | 'removed';
+  message: string;
 }
 
 export interface PermissionRequest {
-    id: string;
-    permission: string;
-    url: string;
+  id: string;
+  permission: string;
+  url: string;
 }
 
 export interface ElectronAPI {
@@ -31,26 +31,25 @@ export interface ElectronAPI {
   loadToolModule: (moduleName: string) => void;
   toggleFloatingTodo: () => void;
   openPath: (path: string) => void;
-  getWebviewPreloadPath: () => Promise<string>; 
+  getWebviewPreloadPath: () => Promise<string>;
   openFileDialog: () => void;
-  
+
   checkForUpdates: () => Promise<any>;
-  
-  onUpdateAvailable: (callback: () => void) => void;
-  onUpdateProgress: (callback: (progress: any) => void) => void;
-  onUpdateDownloaded: (callback: () => void) => void;
-  
-  removeUpdateAvailableListener: (callback: () => void) => void;
-  removeUpdateProgressListener: (callback: (progress: any) => void) => void;
-  removeUpdateDownloadedListener: (callback: () => void) => void;
-  
+  installUpdate: () => void;
+
+  onUpdateAvailable: (callback: (info: any) => void) => () => void;
+  onUpdateNotAvailable: (callback: (info: any) => void) => () => void;
+  onUpdateProgress: (callback: (progress: any) => void) => () => void;
+  onUpdateDownloaded: (callback: (info: any) => void) => () => void;
+  onUpdateError: (callback: (message: string) => void) => () => void;
+
   // Documentos
   selectPDF: () => Promise<{ path: string; name: string } | null>;
   selectDocument: () => Promise<{ path: string; name: string } | null>; // Adicionado
   readFileBuffer: (path: string) => Promise<Uint8Array | null>; // Adicionado
-  
+
   savePage: () => void;
-  
+
   // Flashcard Actions
   importAnki: () => Promise<any>;
   exportFlashcards: (data: { content: string, format: string, defaultName: string }) => Promise<{ success: boolean; reason?: string; message?: string }>;
@@ -61,8 +60,8 @@ export interface ElectronAPI {
 
   // Storage API
   storage: {
-      get: <T>(key: string) => Promise<T | null>;
-      set: <T>(key: string, value: T) => void;
+    get: <T>(key: string) => Promise<T | null>;
+    set: <T>(key: string, value: T) => void;
   };
 
   // Search API
@@ -74,7 +73,7 @@ export interface ElectronAPI {
   installExtensionFromFile: (path: string) => void;
   toggleExtensionPin: (id: string) => void;
   openExtensionOptions: (id: string) => void;
-  
+
   onExtensionStatus: (callback: (status: ExtensionStatus) => void) => () => void;
   openExtensionPopup: (id: string, popupUrl: string, rect: { x: number, y: number }) => void;
 
@@ -86,7 +85,7 @@ export interface ElectronAPI {
 
   onNewTabRequest: (callback: (url: string) => void) => () => void;
   onToggleTodo: (callback: () => void) => () => void;
-  
+
   // Downloads
   onDownloadStarted: (callback: (item: DownloadItem) => void) => () => void;
   onDownloadUpdated: (callback: (item: Partial<DownloadItem>) => void) => () => void;
