@@ -51,7 +51,7 @@ const NewTab: React.FC<NewTabProps> = ({
     { 
         title: 'Vision Board', 
         desc: 'Mural dos Sonhos', 
-        icon: 'palette', 
+        icon: 'check', 
         color: 'text-fuchsia-400', 
         bg: 'bg-fuchsia-400/10', 
         borderHover: 'group-hover:border-fuchsia-500/50',
