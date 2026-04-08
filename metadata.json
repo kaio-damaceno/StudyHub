@@ -1,7 +1,0 @@
-{
-  "name": "SHB 0.3821",
-  "description": "A productivity ecosystem for students that integrates browsing, smart notes, and study tools into a single unified desktop interface.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
-}
