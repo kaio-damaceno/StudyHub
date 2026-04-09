@@ -1,1 +1,131 @@
-node_modules
+# ================================================
+# REPOSITÓRIO PÚBLICO - SOMENTE INSTALADORES
+# Nenhum código-fonte, configurações internas,
+# dependências ou informações técnicas será exposto
+# ================================================
+
+# ========== CÓDIGO-FONTE ==========
+*.tsx
+*.ts
+*.jsx
+*.js
+App.tsx
+index.tsx
+index.html
+fallback.html
+loading.html
+main.js
+preload.js
+webview-preload.js
+types.ts
+declarations.d.ts
+electron.d.ts
+
+# Diretórios de código
+components/
+contexts/
+core/
+hooks/
+services/
+utils/
+views/
+
+# ========== DEPENDÊNCIAS ==========
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ========== BUILD & DESENVOLVIMENTO ==========
+dist/
+dist-ssr/
+dist-vite/
+out/
+build/
+.turbo/
+.eslintcache
+
+# ========== VARIÁVEIS DE AMBIENTE ==========
+.env
+.env.local
+.env.*.local
+
+# ========== IDE & EDITOR ==========
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# ========== LOGS ==========
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+build_log.txt
+crash_debug.txt
+crash_debug.log
+
+# ========== BINÁRIOS DESNECESSÁRIOS ==========
+*.rar
+*.zip
+*.exe
+*.AppImage
+*.deb
+0.045.rar
+Apenas 2 coisas.rar
+PROJECT 2.rar
+shb-0.391.zip
+
+# ========== DOCUMENTAÇÃO INTERNA ==========
+LEIA_PRIMEIRO.md
+README_COMECE_AQUI.txt
+START_AQUI.md
+README_NEW.md
+RESUMO_FINAL.md
+SETUP_COMPLETO.md
+GUIA_PROFISSIONALIZACAO.md
+INDICE_DOCUMENTACAO.md
+PERSISTENCE_FIX.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+CHANGELOG.md
+DOCUMENTATION.md
+.github/
+
+# ========== CONFIGURAÇÕES DE PROJETO ==========
+tsconfig.json
+vite.config.ts
+electron.d.ts
+declarations.d.ts
+metadata.json
+
+# ========== ASSETS INTERNOS ==========
+assets/
+!assets/logo.png
+
+# ========== CACHE ==========
+.cache/
+cache/
+*.cache
+*.tsbuildinfo
+
+# ========== TEMPORÁRIOS ==========
+*.tmp
+*.temp
+*.bak
+temp/
+tmp/
+temp_newtab.txt
+old/
+archive/
