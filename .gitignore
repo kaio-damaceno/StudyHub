@@ -1,8 +1,3 @@
-# ================================================
-# REPOSITÓRIO PÚBLICO - SOMENTE INSTALADORES
-# Nenhum código-fonte, configurações internas,
-# dependências ou informações técnicas será exposto
-# ================================================
 
 # ========== CÓDIGO-FONTE ==========
 *.tsx
@@ -20,8 +15,6 @@ webview-preload.js
 types.ts
 declarations.d.ts
 electron.d.ts
-
-# Diretórios de código
 components/
 contexts/
 core/
@@ -29,14 +22,10 @@ hooks/
 services/
 utils/
 views/
-
-# ========== DEPENDÊNCIAS ==========
 node_modules/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
-
-# ========== BUILD & DESENVOLVIMENTO ==========
 dist/
 dist-ssr/
 dist-vite/
@@ -44,13 +33,10 @@ out/
 build/
 .turbo/
 .eslintcache
-
-# ========== VARIÁVEIS DE AMBIENTE ==========
 .env
 .env.local
 .env.*.local
 
-# ========== IDE & EDITOR ==========
 .vscode/
 .idea/
 *.swp
@@ -63,8 +49,6 @@ build/
 *.launch
 .settings/
 *.sublime-workspace
-
-# ========== LOGS ==========
 logs
 *.log
 npm-debug.log*
@@ -75,8 +59,6 @@ lerna-debug.log*
 build_log.txt
 crash_debug.txt
 crash_debug.log
-
-# ========== BINÁRIOS DESNECESSÁRIOS ==========
 *.rar
 *.zip
 *.exe
@@ -86,8 +68,8 @@ crash_debug.log
 Apenas 2 coisas.rar
 PROJECT 2.rar
 shb-0.391.zip
-
-# ========== DOCUMENTAÇÃO INTERNA ==========
+REPO_STRUCTURE.md
+SETUP_INICIAL_COMPLETO.md
 LEIA_PRIMEIRO.md
 README_COMECE_AQUI.txt
 START_AQUI.md
@@ -102,25 +84,17 @@ CODE_OF_CONDUCT.md
 CHANGELOG.md
 DOCUMENTATION.md
 .github/
-
-# ========== CONFIGURAÇÕES DE PROJETO ==========
 tsconfig.json
 vite.config.ts
 electron.d.ts
 declarations.d.ts
 metadata.json
-
-# ========== ASSETS INTERNOS ==========
 assets/
 !assets/logo.png
-
-# ========== CACHE ==========
 .cache/
 cache/
 *.cache
 *.tsbuildinfo
-
-# ========== TEMPORÁRIOS ==========
 *.tmp
 *.temp
 *.bak
