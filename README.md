@@ -12,7 +12,7 @@
 
 Seu espaço único para navegar, estudar e ser produtivo. Study Hub integra navegação web, anotações inteligentes, flashcards e ferramentas de aprendizado em uma aplicação desktop moderna.
 
-[📥 Download](#-instalação) · [✨ Funcionalidades](#-funcionalidades) · [📓 Wiki](#WIKI.md)
+[📥 Download](https://github.com/kaio-damaceno/StudyHub/releases) · [✨ Funcionalidades](#-funcionalidades) · [📓 Wiki](#WIKI.md)
 
 ---
 
